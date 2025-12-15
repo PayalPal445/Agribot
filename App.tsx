@@ -310,11 +310,20 @@ const App: React.FC = () => {
     const langCode = getLanguageCodeForWebSpeech(lang);
     utterance.lang = langCode;
 
+    // Prioritize Google voices or Native voices for better quality
     if (availableVoices.length > 0) {
-      let voice = availableVoices.find(v => v.lang === langCode && v.name.includes('Google'));
+      let voice = availableVoices.find(v => v.lang === langCode && (v.name.includes('Google') || v.name.includes('India')));
       if (!voice) voice = availableVoices.find(v => v.lang === langCode);
       if (!voice) voice = availableVoices.find(v => v.lang.startsWith(lang));
-      if (voice) utterance.voice = voice;
+      
+      if (voice) {
+        utterance.voice = voice;
+      }
+    }
+    
+    // Slow down slightly for clarity in regional languages
+    if (lang !== 'en') {
+        utterance.rate = 0.9; 
     }
 
     utterance.onstart = () => setCurrentlyPlayingId('offline-tts');
@@ -335,11 +344,21 @@ const App: React.FC = () => {
 
     setCurrentlyPlayingId(message.id);
 
+    // Always play pre-generated audio if available
     if (message.audioData) {
       await playAudioData(message.audioData);
       return;
     }
 
+    // Specialized Logic:
+    // For Indian Languages, PREFER Offline/Native TTS to avoid "accent/spelling" issues with generic cloud models.
+    const indianLanguages = ['hi', 'mr', 'ta', 'te', 'gu'];
+    if (indianLanguages.includes(appState.language)) {
+        speakTextOffline(message.text, appState.language);
+        return;
+    }
+
+    // For English/Spanish, use high-quality Cloud TTS
     if (isOnline) {
       try {
         const audioBase64 = await generateSpeech(message.text);
