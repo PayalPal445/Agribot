@@ -1,0 +1,9 @@
+{
+  "name": "AgriBot",
+  "description": "An advanced AI-powered smart farming assistant featuring image-based disease detection, multilingual voice-to-voice chat, and offline support. Includes tools for crop planning, weather alerts, scheme matching, market prices, expense tracking, yield prediction, and expert connectivity.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
